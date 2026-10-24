@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import type { TournamentState, DivisionKey, Match, KnockoutMatch } from '@/lib/types';
 import { buildSeedState } from '@/lib/seed';
 import { computeStandings, resolveKnockout } from '@/lib/standings';
-import { loadState, saveState, subscribeToState, hasSupabase } from '@/lib/supabase';
+import { loadState, saveState, startPolling, isLive } from '@/lib/storage';
 import StandingsTable from './StandingsTable';
 import FixtureList from './FixtureList';
 import KnockoutBracket from './KnockoutBracket';
@@ -15,8 +15,10 @@ export default function TournamentApp() {
   const [saving, setSaving] = useState(false);
   const [resetConfirm, setResetConfirm] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [live, setLive] = useState(false);
 
   useEffect(() => {
+    let stopPolling: (() => void) | null = null;
     (async () => {
       setSyncing(true);
       let loaded = await loadState();
@@ -25,13 +27,15 @@ export default function TournamentApp() {
         await saveState(loaded);
       }
       setState(loaded);
+      setLive(isLive);
       setSyncing(false);
 
-      const unsub = await subscribeToState((incoming) => {
+      stopPolling = startPolling((incoming) => {
         setState(incoming);
+        setLive(true);
       });
-      return unsub;
     })();
+    return () => { stopPolling?.(); };
   }, []);
 
   const persist = useCallback(async (next: TournamentState) => {
@@ -168,10 +172,10 @@ export default function TournamentApp() {
           <div className="flex items-center gap-2">
             {saving && <span className="text-xs text-yellow-400 animate-pulse">saving…</span>}
             {syncing && <span className="text-xs text-blue-400 animate-pulse">syncing…</span>}
-            {!hasSupabase && (
+            {!live && !syncing && (
               <span className="text-[10px] bg-yellow-900/60 text-yellow-400 px-2 py-0.5 rounded font-bold">LOCAL</span>
             )}
-            {hasSupabase && !saving && !syncing && (
+            {live && !saving && !syncing && (
               <span className="text-[10px] bg-green-900/60 text-green-400 px-2 py-0.5 rounded font-bold">LIVE</span>
             )}
           </div>
