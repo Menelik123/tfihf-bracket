@@ -18,16 +18,21 @@ export interface Group {
 
 export interface KnockoutMatch {
   id: string;
-  home: string | null;
-  away: string | null;
+  home: string;
+  away: string;
   homeScore: number | null;
   awayScore: number | null;
   status: MatchStatus;
 }
 
 export interface Knockout {
-  sf1: KnockoutMatch; // A1 vs B2
-  sf2: KnockoutMatch; // B1 vs A2
+  hasQF: boolean; // 8-team (QF→SF→F) vs 4-team (SF→F)
+  qf1: KnockoutMatch;
+  qf2: KnockoutMatch;
+  qf3: KnockoutMatch;
+  qf4: KnockoutMatch;
+  sf1: KnockoutMatch;
+  sf2: KnockoutMatch;
   final: KnockoutMatch;
 }
 

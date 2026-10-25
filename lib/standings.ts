@@ -1,4 +1,4 @@
-import type { Match, Group, Division, Knockout, KnockoutMatch } from './types';
+import type { Match, Knockout, KnockoutMatch } from './types';
 
 export interface TeamStanding {
   team: string;
@@ -21,21 +21,11 @@ export function computeStandings(teams: string[], fixtures: Match[]): TeamStandi
     const h = map[f.home];
     const a = map[f.away];
     if (!h || !a) continue;
-    h.played++;
-    a.played++;
-    h.pf += f.homeScore;
-    h.pa += f.awayScore;
-    a.pf += f.awayScore;
-    a.pa += f.homeScore;
-    if (f.homeScore > f.awayScore) {
-      h.won++;
-      h.pts += 3;
-      a.lost++;
-    } else if (f.awayScore > f.homeScore) {
-      a.won++;
-      a.pts += 3;
-      h.lost++;
-    }
+    h.played++; a.played++;
+    h.pf += f.homeScore; h.pa += f.awayScore;
+    a.pf += f.awayScore; a.pa += f.homeScore;
+    if (f.homeScore > f.awayScore) { h.won++; h.pts += 3; a.lost++; }
+    else if (f.awayScore > f.homeScore) { a.won++; a.pts += 3; h.lost++; }
   }
   for (const s of Object.values(map)) s.pd = s.pf - s.pa;
   return Object.values(map).sort((a, b) =>
@@ -45,55 +35,29 @@ export function computeStandings(teams: string[], fixtures: Match[]): TeamStandi
   );
 }
 
-function groupComplete(group: Group): boolean {
-  return group.fixtures.every(f => f.status === 'final');
+function winner(m: KnockoutMatch): string {
+  if (m.status !== 'final' || m.homeScore === null || m.awayScore === null) return '';
+  return m.homeScore >= m.awayScore ? m.home : m.away;
 }
 
-function sfWinner(sf: KnockoutMatch): string | null {
-  if (sf.status !== 'final' || sf.homeScore === null || sf.awayScore === null) return null;
-  return sf.homeScore > sf.awayScore ? sf.home : sf.away;
-}
+// After scoring a QF/SF, auto-advance winner into next round slot if that slot is blank.
+// Returns updated knockout. All slots remain manually editable.
+export function advanceBracket(ko: Knockout): Knockout {
+  const k = structuredClone(ko);
 
-export function resolveKnockout(division: Division): Knockout {
-  const ko = structuredClone(division.knockout);
-  const aComplete = groupComplete(division.groupA);
-  const bComplete = groupComplete(division.groupB);
-
-  if (aComplete && bComplete) {
-    const sA = computeStandings(division.groupA.teams, division.groupA.fixtures);
-    const sB = computeStandings(division.groupB.teams, division.groupB.fixtures);
-    const newHome1 = sA[0]?.team ?? null;
-    const newAway1 = sB[1]?.team ?? null;
-    const newHome2 = sB[0]?.team ?? null;
-    const newAway2 = sA[1]?.team ?? null;
-
-    // Reset SF scores if teams changed
-    if (ko.sf1.home !== newHome1 || ko.sf1.away !== newAway1) {
-      ko.sf1 = { ...ko.sf1, home: newHome1, away: newAway1, homeScore: null, awayScore: null, status: 'pending' };
-    }
-    if (ko.sf2.home !== newHome2 || ko.sf2.away !== newAway2) {
-      ko.sf2 = { ...ko.sf2, home: newHome2, away: newAway2, homeScore: null, awayScore: null, status: 'pending' };
-    }
-  } else {
-    ko.sf1 = { ...ko.sf1, home: null, away: null, homeScore: null, awayScore: null, status: 'pending' };
-    ko.sf2 = { ...ko.sf2, home: null, away: null, homeScore: null, awayScore: null, status: 'pending' };
-    ko.final = { ...ko.final, home: null, away: null, homeScore: null, awayScore: null, status: 'pending' };
-    return ko;
+  if (k.hasQF) {
+    const w1 = winner(k.qf1); if (w1 && !k.sf1.home) k.sf1.home = w1;
+    const w2 = winner(k.qf2); if (w2 && !k.sf1.away) k.sf1.away = w2;
+    const w3 = winner(k.qf3); if (w3 && !k.sf2.home) k.sf2.home = w3;
+    const w4 = winner(k.qf4); if (w4 && !k.sf2.away) k.sf2.away = w4;
   }
 
-  const w1 = sfWinner(ko.sf1);
-  const w2 = sfWinner(ko.sf2);
-  if (w1 && w2) {
-    if (ko.final.home !== w1 || ko.final.away !== w2) {
-      ko.final = { ...ko.final, home: w1, away: w2, homeScore: null, awayScore: null, status: 'pending' };
-    }
-  } else {
-    ko.final = { ...ko.final, home: w1, away: w2, homeScore: null, awayScore: null, status: 'pending' };
-  }
+  const ws1 = winner(k.sf1); if (ws1 && !k.final.home) k.final.home = ws1;
+  const ws2 = winner(k.sf2); if (ws2 && !k.final.away) k.final.away = ws2;
 
-  return ko;
+  return k;
 }
 
-export function finalWinner(ko: Knockout): string | null {
-  return sfWinner(ko.final);
+export function bracketChampion(ko: Knockout): string {
+  return winner(ko.final);
 }
