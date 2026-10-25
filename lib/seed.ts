@@ -19,6 +19,7 @@ function emptyKnockout(prefix: string): Knockout {
     qf4: km(`${prefix}_qf4`),
     sf1: km(`${prefix}_sf1`),
     sf2: km(`${prefix}_sf2`),
+    third: km(`${prefix}_third`),
     final: km(`${prefix}_final`),
   };
 }

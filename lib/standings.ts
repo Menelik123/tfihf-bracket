@@ -40,8 +40,13 @@ function winner(m: KnockoutMatch): string {
   return m.homeScore >= m.awayScore ? m.home : m.away;
 }
 
-// After scoring a QF/SF, auto-advance winner into next round slot if that slot is blank.
-// Returns updated knockout. All slots remain manually editable.
+function loser(m: KnockoutMatch): string {
+  if (m.status !== 'final' || m.homeScore === null || m.awayScore === null) return '';
+  return m.homeScore >= m.awayScore ? m.away : m.home;
+}
+
+// After scoring a QF/SF, auto-advance winner into next round and loser into 3rd place.
+// Slots remain manually editable — only fills if blank.
 export function advanceBracket(ko: Knockout): Knockout {
   const k = structuredClone(ko);
 
@@ -52,8 +57,11 @@ export function advanceBracket(ko: Knockout): Knockout {
     const w4 = winner(k.qf4); if (w4 && !k.sf2.away) k.sf2.away = w4;
   }
 
+  // SF winners → Final; SF losers → 3rd Place
   const ws1 = winner(k.sf1); if (ws1 && !k.final.home) k.final.home = ws1;
   const ws2 = winner(k.sf2); if (ws2 && !k.final.away) k.final.away = ws2;
+  const ls1 = loser(k.sf1);  if (ls1 && !k.third.home) k.third.home = ls1;
+  const ls2 = loser(k.sf2);  if (ls2 && !k.third.away) k.third.away = ls2;
 
   return k;
 }

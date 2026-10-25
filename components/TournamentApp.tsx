@@ -127,7 +127,7 @@ export default function TournamentApp() {
         typeof m === 'object' && m !== null && 'id' in m && (m as { id: string }).id === id
           ? { ...m, homeScore: hs, awayScore: as_, status: 'final' as const }
           : m;
-      return { ...ko, qf1: upd(ko.qf1), qf2: upd(ko.qf2), qf3: upd(ko.qf3), qf4: upd(ko.qf4), sf1: upd(ko.sf1), sf2: upd(ko.sf2), final: upd(ko.final) } as Knockout;
+      return { ...ko, qf1: upd(ko.qf1), qf2: upd(ko.qf2), qf3: upd(ko.qf3), qf4: upd(ko.qf4), sf1: upd(ko.sf1), sf2: upd(ko.sf2), third: upd(ko.third), final: upd(ko.final) } as Knockout;
     });
   }, [patchKO]);
 
@@ -137,7 +137,7 @@ export default function TournamentApp() {
         typeof m === 'object' && m !== null && 'id' in m && (m as { id: string }).id === id
           ? { ...m, homeScore: null, awayScore: null, status: 'pending' as const }
           : m;
-      return { ...ko, qf1: upd(ko.qf1), qf2: upd(ko.qf2), qf3: upd(ko.qf3), qf4: upd(ko.qf4), sf1: upd(ko.sf1), sf2: upd(ko.sf2), final: upd(ko.final) } as Knockout;
+      return { ...ko, qf1: upd(ko.qf1), qf2: upd(ko.qf2), qf3: upd(ko.qf3), qf4: upd(ko.qf4), sf1: upd(ko.sf1), sf2: upd(ko.sf2), third: upd(ko.third), final: upd(ko.final) } as Knockout;
     });
   }, [patchKO]);
 
@@ -147,7 +147,7 @@ export default function TournamentApp() {
         typeof m === 'object' && m !== null && 'id' in m && (m as { id: string }).id === id
           ? { ...m, [side]: value }
           : m;
-      return { ...ko, qf1: upd(ko.qf1), qf2: upd(ko.qf2), qf3: upd(ko.qf3), qf4: upd(ko.qf4), sf1: upd(ko.sf1), sf2: upd(ko.sf2), final: upd(ko.final) } as Knockout;
+      return { ...ko, qf1: upd(ko.qf1), qf2: upd(ko.qf2), qf3: upd(ko.qf3), qf4: upd(ko.qf4), sf1: upd(ko.sf1), sf2: upd(ko.sf2), third: upd(ko.third), final: upd(ko.final) } as Knockout;
     });
   }, [patchKO]);
 
@@ -313,6 +313,7 @@ function migrateState(s: TournamentState): TournamentState {
       qf4: ko.qf4 ?? mk(`${prefix}_qf4`),
       sf1: { ...mk(`${prefix}_sf1`), ...(ko.sf1 ?? {}), home: (ko.sf1 as { home?: string | null })?.home ?? '', away: (ko.sf1 as { away?: string | null })?.away ?? '' },
       sf2: { ...mk(`${prefix}_sf2`), ...(ko.sf2 ?? {}), home: (ko.sf2 as { home?: string | null })?.home ?? '', away: (ko.sf2 as { away?: string | null })?.away ?? '' },
+      third: ko.third ?? mk(`${prefix}_third`),
       final: { ...mk(`${prefix}_final`), ...(ko.final ?? {}), home: (ko.final as { home?: string | null })?.home ?? '', away: (ko.final as { away?: string | null })?.away ?? '' },
     };
   }

@@ -33,6 +33,7 @@ export interface Knockout {
   qf4: KnockoutMatch;
   sf1: KnockoutMatch;
   sf2: KnockoutMatch;
+  third: KnockoutMatch; // losers of SF1 vs SF2
   final: KnockoutMatch;
 }
 

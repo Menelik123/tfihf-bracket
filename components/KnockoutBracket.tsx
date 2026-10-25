@@ -216,15 +216,25 @@ export default function KnockoutBracket({ knockout, onSave, onClear, onEditTeam,
         ))}
       </div>
 
-      {/* Final */}
-      <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Final</h3>
-      <KOCard
-        label="Final"
-        match={knockout.final}
-        onSave={(h, a) => onSave(knockout.final.id, h, a)}
-        onClear={() => onClear(knockout.final.id)}
-        onEditTeam={(side, value) => onEditTeam(knockout.final.id, side, value)}
-      />
+      {/* 3rd Place + Final side by side label */}
+      <div className="grid grid-cols-1 gap-3">
+        <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">3rd Place</h3>
+        <KOCard
+          label="3rd Place Game — (SF losers)"
+          match={knockout.third}
+          onSave={(h, a) => onSave(knockout.third.id, h, a)}
+          onClear={() => onClear(knockout.third.id)}
+          onEditTeam={(side, value) => onEditTeam(knockout.third.id, side, value)}
+        />
+        <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Final</h3>
+        <KOCard
+          label="Final — (SF winners)"
+          match={knockout.final}
+          onSave={(h, a) => onSave(knockout.final.id, h, a)}
+          onClear={() => onClear(knockout.final.id)}
+          onEditTeam={(side, value) => onEditTeam(knockout.final.id, side, value)}
+        />
+      </div>
     </div>
   );
 }
